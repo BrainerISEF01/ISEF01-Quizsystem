@@ -1,0 +1,8 @@
+node_modules/
+public/
+App.test.js
+logo.svg
+reportWebVitals.js
+setupTests.js
+package-lock.json
+README.md
