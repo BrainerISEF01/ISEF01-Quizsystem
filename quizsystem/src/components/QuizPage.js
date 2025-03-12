@@ -15,10 +15,13 @@ const QuizPage = () => {
 
   return (
     <div className="container-fluid d-flex flex-column min-vh-100 px-0">
+      {/* Header: Vollbreit + Fixes Layout */}
       <Header />
       
+      {/* Hauptinhalt */}
+      
       <main className="d-flex flex-column align-items-center flex-grow-1 mt-5">
-        {/* Timerfunktion */}
+        {/* Timer rechts oberhalb des Quiz-Kastens */}
         <div className="d-flex justify-content-end w-50 mb-2">
           <span className="badge bg-danger fs-5">{timeLeft} Sekunden</span>
         </div>
@@ -48,7 +51,7 @@ const QuizPage = () => {
           </div>
         </div>
         
-        {/* Navigationslinks und Buttons */}
+        {/* Navigationslinks und Button außerhalb des Frage-Kastens */}
         <div className="d-flex justify-content-between w-50 mt-3">
           <div>
             <a href="#" className="text-dark text-decoration-none me-3">Zurück</a>

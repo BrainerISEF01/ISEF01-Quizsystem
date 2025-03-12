@@ -1,6 +1,7 @@
-import React from "react";
+import React from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
 import logo from "../assets/logo.png";
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   return (
@@ -10,7 +11,7 @@ const Header = () => {
         <h2 className="mb-0 fw-bold">Brainer Quiz Platform</h2>
       </div>
       <div className="position-absolute bottom-0 end-0 pb-2 pe-4">
-        <a href="#" className="text-dark text-decoration-none me-3">Quiz-Lobby</a>
+        <Link to="/quizlobby"> Quiz lobby </Link>
         <a href="#" className="text-dark text-decoration-none">Log out</a>
       </div>
     </header>

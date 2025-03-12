@@ -1,10 +1,11 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "../components/Header"; 
+import Header from "../components/Header"; // Importiere den Header
 
 const Questions = () => {
   return (
     <div className="container-fluid px-0">
+      {/* Header */}
       <Header />
 
       {/* Hauptcontainer */}

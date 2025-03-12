@@ -2,7 +2,7 @@ import React from "react";
 import Header from "./Header";
 
 const QuizEnde = ({ modus, spielerErgebnis, gegnerErgebnis }) => {
-
+  // Bestimme Nachricht für PvP-Modus
   let pvpErgebnisText = "";
   if (modus === "PvP") {
     if (spielerErgebnis > gegnerErgebnis) {
@@ -38,6 +38,7 @@ const QuizEnde = ({ modus, spielerErgebnis, gegnerErgebnis }) => {
 
           {modus === "PvP" && <p className="mt-4 font-bold">{pvpErgebnisText}</p>}
 
+          {/* Buttons (ohne Funktion) */}
           <div className=" mt-6 flex justify-center space-x-4" style={{marginTop: '250px'}}>
             <button className="btn btn-primary me-5">
               Neues Spiel starten
