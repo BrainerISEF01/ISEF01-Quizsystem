@@ -4,3 +4,4 @@ package.json
 Frontend/
 utils/
 .gitignore
+register.js
