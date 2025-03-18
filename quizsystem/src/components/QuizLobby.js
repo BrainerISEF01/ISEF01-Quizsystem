@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "../components/Header";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import iconComputer from "../assets/icon-computer.png";
 import icon1v1 from "../assets/icon-1v1.png";
@@ -10,6 +10,14 @@ import iconQuestions from "../assets/icon-questions.png";
 
 const QuizLobby = () => {
   const username = "[Benutzername]"; // Später dynamisch ersetzen
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   return (
     <div className="container-fluid d-flex flex-column min-vh-100 px-0">

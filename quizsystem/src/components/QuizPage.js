@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "../components/Header";
-
+import { useNavigate } from 'react-router-dom';
 
 const QuizPage = () => {
   const [timeLeft, setTimeLeft] = useState(30);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (timeLeft > 0) {
