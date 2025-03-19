@@ -10,7 +10,7 @@ const Header = () => {
     // Remove token from session storage
     sessionStorage.removeItem('token');
     // Redirect to LoginPage
-    navigate('/login');
+    navigate('/');
   };
 
   return (
