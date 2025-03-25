@@ -6,11 +6,31 @@ import { Link, useNavigate } from 'react-router-dom';
 const Header = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Remove token from session storage
-    sessionStorage.removeItem('token');
-    // Redirect to LoginPage
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('https://03c0-93-207-154-98.ngrok-free.app/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        // Remove token from session storage
+        sessionStorage.removeItem('token');
+        // Show success message
+        alert('Logout berhasil');
+        // Redirect to LoginPage
+        navigate('/');
+      } else {
+        // Handle error response
+        alert('Logout gagal');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+      alert('Terjadi kesalahan saat logout');
+    }
   };
 
   return (

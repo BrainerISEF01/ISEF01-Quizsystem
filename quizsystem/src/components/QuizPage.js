@@ -12,6 +12,31 @@ const QuizPage = () => {
     if (!token) {
       navigate('/login');
     }
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch("https://03c0-93-207-154-98.ngrok-free.app/quiz/start ",{
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({mode:"computer",user_id:1,opponent_id:""})
+        });
+        if (!response.ok) {
+          console.log('Error: '+response.statusText);
+          //throw new Error(`Error: ${response.statusText}`);
+        }
+        const result = await response.json();
+        // Process the fetched data as needed
+        console.log(result);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+
+
+    fetchData();
   }, [navigate]);
 
   useEffect(() => {

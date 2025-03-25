@@ -6,6 +6,8 @@ import QuizPage from "./components/QuizPage";
 import QuizEnde from "./components/QuizEnde";
 import Leaderboard from "./components/Leaderboard";
 import Questions from "./components/Questions";
+import QuestionsMultiple from "./components/QuestionsMultiple";
+import FrageErfolgreich from './components/FrageErfolgreich';
 
 function App() {
   
@@ -17,7 +19,9 @@ function App() {
         <Route path="/quizpage" element={<QuizPage />} /> 
         <Route path="/quizende" element={<QuizEnde />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/questions" element={<Questions />} /> 
+        <Route path="/questions" element={<Questions />} />
+        <Route path="/questionsmultiple" element={<QuestionsMultiple />} /> 
+        <Route path="/frageerfolgreich" element={<FrageErfolgreich />} />
       </Routes>
     </Router>
   );
