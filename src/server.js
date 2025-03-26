@@ -100,4 +100,4 @@ server.listen(PORT, () => {
     console.log(`🚀 Server läuft auf Port ${PORT}`);
 });
 
-module.exports = { io }; // export io-Instance
+module.exports = { io, server };

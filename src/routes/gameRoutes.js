@@ -48,4 +48,6 @@ router.post("/", async (req, res) => {
 });
 
 // Export the router
-module.exports = router;
+module.exports = router; // Export the router
+//module.exports = { router };
+//module.exports.activeGames = activeGames; //export activeGames
