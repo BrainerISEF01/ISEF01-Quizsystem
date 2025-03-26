@@ -1,7 +1,7 @@
 const express = require("express");
-const http = require("http"); // WebSockets benötigen ein HTTP-Server-Objekt
+const http = require("http"); // WebSockets require an HTTP server object
 const { Server } = require("socket.io"); 
-const { Quiz, Question, Leaderboard } = require("./models"); // Modelle importieren
+const { Quiz, Question, Leaderboard } = require("./models"); // import modells
 const authRoutes = require("./routes/authRoutes.js");
 const leaderboardRoutes = require("./routes/leaderboardRoutes.js");
 const questionsRoutes = require("./routes/questionsRoutes.js");
@@ -11,30 +11,30 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const server = http.createServer(app); // HTTP-Server erstellen
-const io = new Server(server, { cors: { origin: "*" } }); // WebSocket-Server mit CORS
+const server = http.createServer(app); // Create HTTP server
+const io = new Server(server, { cors: { origin: "*" } }); // WebSocket-Server with CORS
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/leaderboard", leaderboardRoutes);
 app.use("/questions", questionsRoutes);
-app.use("/quiz", require("./routes/quizRoutes")(io)); // io-Instanz übergeben
-app.use("/match", gameRoutes);
+app.use("/quiz", require("./routes/quizRoutes")(io)); // Pass io instance
+app.use("/matchmaking", gameRoutes);
 
-// Umgehung für ngrok-Warnseite
+// bypass for ngrok-Warningpage
 app.use((req, res, next) => {
     res.set("ngrok-skip-browser-warning", "true");
     next();
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
-// WebSocket-Verbindung für Spielereignisse
+// WebSocket connection for game events
 io.on("connection", (socket) => {
     console.log(`🔌 User connected: ${socket.id}`);
 
-    // Spieler tritt einem Spiel bei (1v1 oder gegen den Computer)
+    // Player joins a game (1v1 or against the computer)
     socket.on("joinGame", (data) => {
         const { username, gameId } = data;
 
@@ -43,7 +43,7 @@ io.on("connection", (socket) => {
         socket.join(gameId);
         io.to(gameId).emit("playerJoined", { username, msg: `${username} ist dem Spiel beigetreten!` });
 
-        // Benachrichtigen, wenn ein Computer beitritt
+        // Notify when a computer joins
         if (data.mode === "computer") {
             setTimeout(() => {
                 io.to(gameId).emit("computerJoined", { msg: "Der Computer ist bereit!" });
@@ -51,7 +51,7 @@ io.on("connection", (socket) => {
         }
     });
 
-    // Spieler sendet eine Antwort
+    // player sends an answer
     socket.on("submitAnswer", async (data) => {
         try {
             const { gameId, userId, questionId, answer } = data;
@@ -62,14 +62,14 @@ io.on("connection", (socket) => {
                 return;
             }
 
-            // Antwort validieren
+            // validate answer
             const correct = answer === question.correctAnswer;
             const points = correct ? 10 : 0;
 
-            // Leaderboard aktualisieren
+            // update leaderboard
             await Leaderboard.create({ user_id: userId, quiz_id: gameId, score: points });
 
-            // Punktestand an alle Spieler senden
+            // Send score to all players
             io.to(gameId).emit("updateScore", { user: userId, score: points });
 
         } catch (err) {
@@ -78,7 +78,7 @@ io.on("connection", (socket) => {
         }
     });
 
-    // Spiel beenden
+    // end game
     socket.on("endGame", async (data) => {
         try {
             const { gameId } = data;
@@ -90,7 +90,7 @@ io.on("connection", (socket) => {
         }
     });
 
-    // Spieler trennt die Verbindung
+    // The player disconnects
     socket.on("disconnect", () => {
         console.log(`❌ User ${socket.id} hat die Verbindung getrennt.`);
     });
@@ -100,4 +100,4 @@ server.listen(PORT, () => {
     console.log(`🚀 Server läuft auf Port ${PORT}`);
 });
 
-module.exports = { io }; // io-Instanz exportieren
+module.exports = { io }; // export io-Instance

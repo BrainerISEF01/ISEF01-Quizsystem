@@ -6,7 +6,7 @@ const router = express.Router();
 const activeGames = {}; // { gameId: { players: [userId], questions: [...], currentQuestionIndex: 0, scores: { userId: score }, timer: 120 } }
 
 // Matchmaking for 1v1
-router.post("/matchmaking", async (req, res) => {
+router.post("/", async (req, res) => {
     try {
         const { userId, timerDuration } = req.body;
 
