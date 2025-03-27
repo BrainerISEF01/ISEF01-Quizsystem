@@ -10,11 +10,18 @@ const gameRoutes = require("./routes/gameRoutes.js");
 const cors = require("cors");
 require("dotenv").config();
 
+
 const app = express();
 const server = http.createServer(app); // Create HTTP server
 const io = new Server(server, { cors: { origin: "*" } }); // WebSocket-Server with CORS
 
-app.use(cors({ origin: "*" }));
+app.use(
+    cors({
+         origin: "*",
+        })
+    );
+
+
 app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/leaderboard", leaderboardRoutes);
@@ -28,7 +35,7 @@ app.use((req, res, next) => {
     next();
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 // WebSocket connection for game events
 io.on("connection", (socket) => {
