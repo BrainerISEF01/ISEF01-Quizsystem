@@ -9,8 +9,9 @@ import iconLeague from "../assets/icon-league.png";
 import iconQuestions from "../assets/icon-questions.png";
 
 const QuizLobby = () => {
-  const username = "[Benutzername]"; // Später dynamisch ersetzen
+  const username = sessionStorage.getItem('email'); 
   const navigate = useNavigate();
+  //console.log(sessionStorage.getItem('user_id'));
 
   useEffect(() => {
     const token = sessionStorage.getItem('token');
@@ -30,8 +31,8 @@ const QuizLobby = () => {
 
         {/* Quiz-Optionen */}
         <div className="row justify-content-center w-100">
-          <QuizOption text="Gegen den Computer spielen" icon={iconComputer} link="/quizpage"/>
-          <QuizOption text="1 vs 1 spielen" icon={icon1v1} link="/quizpage"/>
+          <QuizOption text="Neues Quiz starten" icon={iconComputer} link="/quizstart"/>
+          <QuizOption text="Mitspielen" icon={iconComputer} link="/quiz1v1"/>
           <QuizOption text="Ligamodus" icon={iconLeague} link="/leaderboard"/>
           <QuizOption text="Eigene Fragen hinzufügen" icon={iconQuestions} link="/questions"/>
         </div>
@@ -45,7 +46,7 @@ const QuizOption = ({ text, icon, link }) => {
   return (
     <div className="col-md-3 mb-3 d-flex">
       <Link
-        to={link} // Link zum angegebenen Pfad
+        to={link} 
         className="btn btn-light w-100 p-4 shadow-sm d-flex flex-column align-items-center justify-content-center rounded"
         style={{ height: "250px" }}
       >

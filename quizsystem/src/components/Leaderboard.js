@@ -1,27 +1,40 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
+import { BASE_URL } from "../fetchApi";
+import { useNavigate } from "react-router-dom";
 
 const Leaderboard = () => {
+  const navigate = useNavigate();
+  const base_url = BASE_URL;
+  //console.log(base_url);
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch("https://03c0-93-207-154-98.ngrok-free.app/leaderboard")
-      .then((response) => {
-        console.log(response);
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+
+    const fetchLeaderboard = async () => {
+      try {
+        // Panggil API untuk mendapatkan data leaderboard
+        const response = await fetch(`${base_url}/leaderboard`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new TypeError("Received non-JSON response");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        //console.log(data);
-        setData(data);
-      })
-      .catch((error) => console.error("Error fetching leaderboard data:", error));
+        const result = await response.json();
+        setData(result); // Simpan data ke state
+      } catch (error) {
+        console.error('Error fetching leaderboard data:', error);
+      }
+    };
+
+    fetchLeaderboard(); // Panggil fungsi fetchLeaderboard saat komponen dimount
   }, []);
 
   return (
@@ -38,12 +51,20 @@ const Leaderboard = () => {
               </tr>
             </thead>
             <tbody>
-              {data.map(({ user_id, score }, index) => (
-                <tr key={index}>
-                  <td className="border p-3">{user_id}</td>
-                  <td className="border p-3">{score}</td>
+              {Array.isArray(data) && data.length > 0 ? (
+                data.map(({ user_id, score }, index) => (
+                  <tr key={index}>
+                    <td className="border p-3">{user_id}</td>
+                    <td className="border p-3">{score}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="2" className="border p-3 text-center">
+                    No data available
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
           <hr></hr>

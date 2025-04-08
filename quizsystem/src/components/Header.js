@@ -2,34 +2,47 @@ import React from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
 import logo from "../assets/logo.png";
 import { Link, useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../fetchApi';
 
 const Header = () => {
+  const base_url = BASE_URL;
+  //console.log(base_url);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('https://03c0-93-207-154-98.ngrok-free.app/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        }
-      });
+      
+      const headToSend = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+      };
 
-      if (response.ok) {
-        // Remove token from session storage
-        sessionStorage.removeItem('token');
-        // Show success message
-        alert('Logout berhasil');
-        // Redirect to LoginPage
-        navigate('/');
-      } else {
-        // Handle error response
-        alert('Logout gagal');
+      try {
+        const response = await fetch(`${base_url}/auth/logout`, {
+          method: 'POST',
+          headers: headToSend,
+          body: JSON.stringify({})
+        });
+
+        if (response.ok) {
+          // Remove token from session storage
+          sessionStorage.removeItem('token');
+          // Show success message
+          alert('Logout successful');
+          // Redirect to LoginPage
+          navigate('/');
+        } else {
+          // Handle error response
+          const errorData = await response.json();
+          alert(`Logout failed: ${errorData.message || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error during logout:', error);
+        alert('An error occurred during logout.');
       }
     } catch (error) {
       console.error('Error during logout:', error);
-      alert('Terjadi kesalahan saat logout');
+      alert(error.message);
     }
   };
 
@@ -41,7 +54,7 @@ const Header = () => {
       </div>
       <div className="position-absolute bottom-0 end-0 pb-2 pe-4">
         <Link to="/quizlobby" className="me-3">Quiz lobby</Link>
-        <button onClick={handleLogout} className="btn btn-link text-dark text-decoration-none p-0">Log out</button>
+        <a href="#" onClick={handleLogout} className="btn btn-link me-3">Log out</a>
       </div>
     </header>
   );

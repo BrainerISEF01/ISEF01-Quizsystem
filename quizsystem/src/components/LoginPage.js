@@ -1,16 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { BASE_URL } from "../fetchApi";
 
 const LoginPage = () => {
+  const base_url = BASE_URL;
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (email, password) => {
+
     try {
-      const response = await fetch('https://03c0-93-207-154-98.ngrok-free.app/auth/login', { // Ensure backend URL is correct
+      const response = await fetch(`${base_url}/auth/login`, { // Ensure backend URL is correct
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -34,8 +38,15 @@ const LoginPage = () => {
     event.preventDefault();
     try {
       const data = await handleLogin(email, password);
-      console.log('Login successful:', data);
+      //console.log('Login successful: '+data);
       // Save token to session storage
+      const tokenParts = data.token.split('.');
+      if (tokenParts.length === 3) {
+        const payload = JSON.parse(atob(tokenParts[1]));
+        
+        sessionStorage.setItem('user_id', payload.id); // Save user_id from token payload
+        sessionStorage.setItem('email', payload.email); // Save user_name from token payload
+      }
       sessionStorage.setItem('token', data.token);
       // Redirect to QuizPage
       navigate('/quizlobby');

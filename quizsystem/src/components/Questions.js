@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "../components/Header"; // Importiere den Header
+import Header from "../components/Header"; 
 import { Link,useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../fetchApi'; 
 
 const Questions = () => {
+  const base_url = BASE_URL;
+
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", "", "", ""]);
   const [correctAnswer, setCorrectAnswer] = useState("");
@@ -30,7 +33,7 @@ const Questions = () => {
       //console.log('hello');
       // const data_json = JSON.stringify(data);
       // console.log(data_json);
-      const response = await fetch("https://03c0-93-207-154-98.ngrok-free.app/questions/add", {
+      const response = await fetch(`${base_url}/questions/add`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json'
@@ -43,14 +46,28 @@ const Questions = () => {
       }
 
       const result = await response.json();
+
+      const msg = result.msg;
       //alert(`Frage hinzugefügt: ${result.msg}`);
 
-      navigate('/frageerfolgreich',{state: result.msg});
+      navigate('/frageerfolgreich',{state: {msg}});
       
     } catch (error) {
       console.log(error);
     }
   };
+
+  // const handleSubmit = async (e) => {
+  //   // const result = {
+  //   //   question,
+  //   //   options,
+  //   //   correctAnswer,
+  //   //   created_by: 1
+  //   // };
+  //   const msg = "Question: "+question+" added successfully";
+  //   //alert(msg);
+  //   navigate("/frageerfolgreich",{ state: {msg} });
+  // };
 
   return (
     <div className="container-fluid px-0">
