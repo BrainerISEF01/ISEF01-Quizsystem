@@ -24,6 +24,11 @@ const Quiz1v1 = () => {
         setMsg("Test");
 
         gameData();
+        const interval = setInterval(() => {
+            gameData();
+        }, 3000);
+    
+        return () => clearInterval(interval);
 
     }, [navigate]);
 

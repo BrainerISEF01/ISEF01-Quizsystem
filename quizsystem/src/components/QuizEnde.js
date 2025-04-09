@@ -31,7 +31,6 @@ const QuizEnde = () => {
       navigate('/login');
     }
 
-    updateStatus();
   },[navigate]);
 
   // Tampilkan fetch api data gamedata by gameid
@@ -123,7 +122,7 @@ const QuizEnde = () => {
                     </tr>
                     <tr>
                       <th>Dein Benutzername</th>
-                      <td>{userName} {scoreUser > opScore && (<><span class="badge bg-success text-light">Du hast gewonnen!</span></>)} {scoreUser == opScore && (<><span class="badge bg-warning text-dark">Draw</span></>)} {scoreUser < opScore && (<><span class="badge bg-danger text-light">Du hast verloren!</span></>)}</td>
+                      <td>{userName} {scoreUser > opScore && mode === "1v1" && (<><span class="badge bg-success text-light">Du hast gewonnen!</span></>)} {scoreUser == opScore && mode === "1v1" && (<><span class="badge bg-warning text-dark">Draw</span></>)} {scoreUser < opScore && mode === "1v1" && (<><span class="badge bg-danger text-light">Du hast verloren!</span></>)}</td>
                     </tr>
                     <tr>
                       <th>Deine Punkte</th>
