@@ -33,7 +33,6 @@ const QuizEnde = () => {
 
   },[navigate]);
 
-  // Tampilkan fetch api data gamedata by gameid
   const ende = async () => {
     try {
       const response = await fetch(`${base_url}/matchmaking/ende`, {
