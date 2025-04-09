@@ -15,6 +15,7 @@ const QuizEnde = () => {
   const [scoreUser, setScoreUser] = useState("");
   const [opName, setOpName] = useState("");
   const [opScore, setOpScore] = useState("");
+  const [status,setStatus]= useState("");
 
   useEffect(() => {
     ende();
@@ -53,6 +54,7 @@ const QuizEnde = () => {
       setScoreUser(result.scoreUser);
       setOpName(result.opponentEmail);
       setOpScore(result.scoreOpponent);
+      setStatus(result.status);
     } catch (error) {
       console.error("Error fetching game data:", error);
     }
@@ -78,19 +80,17 @@ const QuizEnde = () => {
       }
 
       const result = await response.json();
-      console.log(result.msg);
+      navigate(0);
     } catch (error) {
       console.error("Error updating status:", error);
     }
   };
 
   const handleBack = () => {
-    updateStatus();
     navigate("/quizstart");
   };
 
   const handleLeaderboard = () => {
-    updateStatus();
     navigate("/leaderboard");
   };
 
@@ -139,6 +139,12 @@ const QuizEnde = () => {
                         </tr>
                       </>
                     )}
+                    <tr>
+                      <td colSpan={2} className="text-center">
+                        {mode === "computer" && status === 1 && (<><button className="btn btn-primary" onClick={updateStatus}>Game is complete</button></>)}
+                        {mode === "1v1" && userName && opName && status === 1 && (<><button className="btn btn-primary" onClick={updateStatus}>Game is complete</button></>)}
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>

@@ -17,8 +17,7 @@ const Leaderboard = () => {
 
     const fetchLeaderboard = async () => {
       try {
-        // Panggil API untuk mendapatkan data leaderboard
-        const response = await fetch(`${base_url}/leaderboard`, {
+        const response = await fetch(`${base_url}/leaderboard/result`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -28,13 +27,13 @@ const Leaderboard = () => {
           throw new Error('Network response was not ok');
         }
         const result = await response.json();
-        setData(result); // Simpan data ke state
+        setData(result);
       } catch (error) {
         console.error('Error fetching leaderboard data:', error);
       }
     };
 
-    fetchLeaderboard(); // Panggil fungsi fetchLeaderboard saat komponen dimount
+    fetchLeaderboard();
   }, []);
 
   return (
@@ -46,15 +45,17 @@ const Leaderboard = () => {
           <table className="w-full border-collapse mt-5 mx-auto" style={{ width: '800px' }}>
             <thead>
               <tr className="bg-gray-300">
-                <th className="border p-3">User ID</th>
+                <th className="border p-3">Mode</th>
+                <th className="border p-3">User</th>
                 <th className="border p-3">Score</th>
               </tr>
             </thead>
             <tbody>
               {Array.isArray(data) && data.length > 0 ? (
-                data.map(({ user_id, score }, index) => (
+                data.map(({ MODE,USER,score }, index) => (
                   <tr key={index}>
-                    <td className="border p-3">{user_id}</td>
+                    <td className="border p-3">{MODE}</td>
+                    <td className="border p-3">{USER}</td>
                     <td className="border p-3">{score}</td>
                   </tr>
                 ))
