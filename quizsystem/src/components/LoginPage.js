@@ -58,11 +58,11 @@ const LoginPage = () => {
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">
       <div className="card p-4 shadow" style={{ width: "320px" }}>
-        <h3 className="text-center mb-3">Login</h3>
+        <h3 className="text-center mb-3">Anmeldung</h3>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label">Email</label>
+            <label className="form-label">Benutzername</label>
             <input
               type="email"
               className="form-control"
@@ -73,7 +73,7 @@ const LoginPage = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Password</label>
+            <label className="form-label">Passwort</label>
             <input
               type="password"
               className="form-control"
@@ -90,8 +90,5 @@ const LoginPage = () => {
     </div>
   );
 };
-
-// Add this to your package.json under "proxy":
-// "proxy": "https://03c0-93-207-154-98.ngrok-free.app"
 
 export default LoginPage;

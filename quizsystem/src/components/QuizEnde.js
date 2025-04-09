@@ -102,8 +102,8 @@ const QuizEnde = () => {
           <br />
           <br />
           <br />
-          <h2 className="text-2xl font-bold">Quiz beendet!</h2>
-
+          <h2 className="text-2xl font-bold">So hast du abgeschnitten!</h2>
+          <br></br>
           <div className="row">
             <div className="col-md-2"></div>
             <div className="col-md-8">
@@ -111,7 +111,6 @@ const QuizEnde = () => {
                 <table className="table table-bordered table-striped">
                   <thead>
                     <tr>
-                      <th colSpan={2}>{gameId}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -141,8 +140,8 @@ const QuizEnde = () => {
                     )}
                     <tr>
                       <td colSpan={2} className="text-center">
-                        {mode === "computer" && status === 1 && (<><button className="btn btn-primary" onClick={updateStatus}>Game is complete</button></>)}
-                        {mode === "1v1" && userName && opName && status === 1 && (<><button className="btn btn-primary" onClick={updateStatus}>Game is complete</button></>)}
+                        {mode === "computer" && status === 1 && (<><button className="btn btn-primary" onClick={updateStatus}>Quiz beenden</button></>)}
+                        {mode === "1v1" && userName && opName && status === 1 && (<><button className="btn btn-primary" onClick={updateStatus}>Quiz beenden</button></>)}
                       </td>
                     </tr>
                   </tbody>

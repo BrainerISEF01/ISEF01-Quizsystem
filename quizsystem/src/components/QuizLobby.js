@@ -3,8 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "../components/Header";
 import { Link, useNavigate } from "react-router-dom";
 
-import iconComputer from "../assets/icon-computer.png";
-import icon1v1 from "../assets/icon-1v1.png";
+import iconNewQuiz from "../assets/icon-newquiz.png"
+import iconGameData from "../assets/icon-gamedata.png";
 import iconLeague from "../assets/icon-league.png";
 import iconQuestions from "../assets/icon-questions.png";
 
@@ -31,8 +31,8 @@ const QuizLobby = () => {
 
         {/* Quiz-Optionen */}
         <div className="row justify-content-center w-100">
-          <QuizOption text="Neues Quiz starten" icon={iconComputer} link="/quizstart"/>
-          <QuizOption text="Mitspielen" icon={iconComputer} link="/quiz1v1"/>
+          <QuizOption text="Neues Quiz starten" icon={iconNewQuiz} link="/quizstart"/>
+          <QuizOption text="Mitspielen" icon={iconGameData} link="/quiz1v1"/>
           <QuizOption text="Ligamodus" icon={iconLeague} link="/leaderboard"/>
           <QuizOption text="Eigene Fragen hinzufügen" icon={iconQuestions} link="/questions"/>
         </div>

@@ -169,7 +169,7 @@ const QuizStart = () => {
 
                 <div className="d-flex justify-content-between w-50 mt-3">
                     <div>&nbsp;</div>
-                    <button className="btn btn-primary" onClick={handleStartQuiz}>Start</button>
+                    <button className="btn btn-primary" onClick={handleStartQuiz}>Los geht's!</button>
                 </div>
             </main>
         </div>

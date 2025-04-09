@@ -140,7 +140,7 @@ const Quiz1v1 = () => {
                                                         className="btn btn-primary"
                                                         onClick={() => startGame({gameId: game.gameId, opponentId: sessionStorage.getItem('user_id'),opponentEmail: sessionStorage.getItem('email')})}
                                                     >
-                                                        Join
+                                                        Beitreten
                                                     </button>
                                                 )}
                                             </td>
