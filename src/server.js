@@ -35,7 +35,7 @@ app.use((req, res, next) => {
     next();
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // WebSocket connection for game events
 io.on("connection", (socket) => {

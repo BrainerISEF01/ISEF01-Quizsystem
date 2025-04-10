@@ -1,5 +1,5 @@
 const express = require("express");
-const { Question, Leaderboard } = require("../models"); 
+const { Question, Leaderboard, GameData } = require("../models"); 
 const router = express.Router();
 
 // import the WebSocket instance
@@ -78,6 +78,48 @@ module.exports = (io) => {
         } catch (err) {
             console.error("Fehler beim Absenden der Antwort:", err);
             res.status(500).json({ msg: "Fehler beim Absenden der Antwort" });
+        }
+    });
+
+    // Update score user gamedata dari gameid
+    router.post("/updateUserScore", async (req, res) => {
+        try {
+            const { gameId, userId, score } = req.body;
+
+            // Update the score in the database
+            const game = await GameData.findOne({ where: { gameId,userId } });
+            if (!game) {
+                return res.status(404).json({ msg: "Game not found" });
+            }
+            game.scoreUser = score;
+            await game.save();
+
+            // Send a response to the client
+            res.json({ msg: "Punkte aktualisiert", game});
+        } catch (err) {
+            console.error("Fehler beim Aktualisieren der Punkte:", err);
+            res.status(500).json({ msg: "Fehler beim Aktualisieren der Punkte" });
+        }
+    });
+
+    // Update score opponent gamedata dari gameid
+    router.post("/updateOpponentScore", async (req, res) => {
+        try {
+            const { gameId, opponentId, score } = req.body;
+
+            // Update the score in the database
+            const game = await GameData.findOne({ where: { gameId,opponentId } });
+            if (!game) {
+                return res.status(404).json({ msg: "Game not found" });
+            }
+            game.scoreOpponent = score;
+            await game.save();
+
+            // Send a response to the client
+            res.json({ msg: "Punkte aktualisiert", game });
+        } catch (err) {
+            console.error("Fehler beim Aktualisieren der Punkte:", err);
+            res.status(500).json({ msg: "Fehler beim Aktualisieren der Punkte" });
         }
     });
 
