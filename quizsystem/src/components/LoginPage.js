@@ -14,7 +14,7 @@ const LoginPage = () => {
   const handleLogin = async (email, password) => {
 
     try {
-      const response = await fetch(`${base_url}/auth/login`, { // Ensure backend URL is correct
+      const response = await fetch(`${base_url}/auth/login`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -24,7 +24,7 @@ const LoginPage = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        throw new Error(errorData.message || 'Login fehlgeschlagen');
       }
 
       const data = await response.json();

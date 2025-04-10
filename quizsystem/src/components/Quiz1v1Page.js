@@ -166,11 +166,7 @@ const Quiz1v1Page = () => {
           return elements;
         })()}
 
-        <div className="d-flex justify-content-between w-50 mt-3">
-          <div>
-            <a href="#" className="text-dark text-decoration-none me-3">Zurück</a>
-            <a href="#" className="text-dark text-decoration-none">|     Nächste Frage</a>
-          </div>
+        <div className="d-flex text-center mt-3">
           <button className="btn btn-primary" onClick={submitQuiz}>Antwort bestätigen</button>
         </div>
       </main>

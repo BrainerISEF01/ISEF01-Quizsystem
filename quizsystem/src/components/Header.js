@@ -28,20 +28,20 @@ const Header = () => {
           // Remove token from session storage
           sessionStorage.removeItem('token');
           // Show success message
-          alert('Logout successful');
+          alert('Abmeldung erfolgreich!');
           // Redirect to LoginPage
           navigate('/');
         } else {
           // Handle error response
           const errorData = await response.json();
-          alert(`Logout failed: ${errorData.message || 'Unknown error'}`);
+          alert(`Abmeldung fehlgeschlagen: ${errorData.message || 'Unbekannter Fehler'}`);
         }
       } catch (error) {
-        console.error('Error during logout:', error);
-        alert('An error occurred during logout.');
+        console.error('Fehler während der Abmeldung:', error);
+        alert('Während der Abmeldung ist ein Fehler aufgetreten.');
       }
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('Fehler während der Abmeldung:', error);
       alert(error.message);
     }
   };
@@ -53,8 +53,8 @@ const Header = () => {
         <h2 className="mb-0 fw-bold">Brainer Quiz Plattform</h2>
       </div>
       <div className="position-absolute bottom-0 end-0 pb-2 pe-4">
-        <Link to="/quizlobby" className="me-3">Quiz lobby</Link>
-        <a href="#" onClick={handleLogout} className="btn btn-link me-3">Log out</a>
+        <Link to="/quizlobby" className="me-3">Quiz-Lobby</Link>
+        <a href="#" onClick={handleLogout} className="btn btn-link me-3">Logout</a>
       </div>
     </header>
   );

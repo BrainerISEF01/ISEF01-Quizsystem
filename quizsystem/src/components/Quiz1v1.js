@@ -111,10 +111,10 @@ const Quiz1v1 = () => {
         <div className="container-fluid d-flex flex-column min-vh-100 px-0">
             <Header />
             <main className="d-flex flex-column align-items-center flex-grow-1 mt-5">
-                <div className="card p-4 shadow-sm" style={{ width: "50%" }}>
-                    <div className="card-header bg-light">Game Data</div>
+                <div className="card p-4 shadow-sm" style={{ width: "95%" }}>
+                    <div className="card-header bg-light">Finde dein Quiz-Duell</div>
                     <div className="card-body">
-                        <div className="table-responsive">
+                        <div className="row table-responsive">
                             <table className="table table-striped table-bordered">
                                 <thead>
                                     <tr>

@@ -105,6 +105,7 @@ const QuizEnde = () => {
           <h2 className="text-2xl font-bold">So hast du abgeschnitten!</h2>
           <br></br>
           <div className="row">
+            
             <div className="col-md-2"></div>
             <div className="col-md-8">
               <div className="table-responsive">
