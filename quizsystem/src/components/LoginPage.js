@@ -62,7 +62,7 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label">Benutzername</label>
+            <label className="form-label">E-Mail-Adresse</label>
             <input
               type="email"
               className="form-control"
