@@ -8,6 +8,7 @@ const questionsRoutes = require("./routes/questionsRoutes.js");
 const quizRoutes = require("./routes/quizRoutes.js");
 const gameRoutes = require("./routes/gameRoutes.js");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 
@@ -36,6 +37,13 @@ app.use((req, res, next) => {
 });
 
 const PORT = process.env.PORT || 4000;
+
+// Serve static React files
+app.use(express.static(path.join(__dirname, "..", "Frontend", "build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "Frontend", "build", "index.html"));
+});
 
 // WebSocket connection for game events
 io.on("connection", (socket) => {
