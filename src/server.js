@@ -30,11 +30,11 @@ app.use("/questions", questionsRoutes);
 app.use("/quiz", require("./routes/quizRoutes")(io)); // Pass io instance
 app.use("/matchmaking", gameRoutes);
 
-// bypass for ngrok-Warningpage
-app.use((req, res, next) => {
-    res.set("ngrok-skip-browser-warning", "true");
-    next();
-});
+// // bypass for ngrok-Warningpage
+// app.use((req, res, next) => {
+//     res.set("ngrok-skip-browser-warning", "true");
+//     next();
+// });
 
 const PORT = process.env.PORT || 4000;
 
