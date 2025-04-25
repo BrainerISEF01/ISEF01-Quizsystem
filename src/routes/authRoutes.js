@@ -42,4 +42,38 @@ router.post("/logout", (req, res) => {
     res.json({ msg: "Logout erfolgreich." });
 });
 
+
+// Register User
+router.post("/register", async (req, res) => {
+    const { username, email, password } = req.body;
+
+    try {
+        // check password length
+        if (!password || password.length < 12) {
+            return res.status(400).json({ message: "Das Passwort muss mindestens 12 Zeichen lang sein." });
+        }
+
+        // check if the user exsists
+        const existingUser = await User.findOne({ where: { email } });
+
+        if (existingUser) {
+            return res.status(400).json({ message: "Benutzer mit dieser E-Mail existiert bereits." });
+        }
+
+        // hash passwort
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // create user
+        const newUser = await User.create({
+            username,
+            email,
+            password: hashedPassword,
+        });
+
+        return res.status(201).json({ message: "Benutzer erfolgreich erstellt.", user: newUser });
+    } catch (error) {
+        return res.status(500).json({ message: "Interner Serverfehler." });
+    }
+});
+
 module.exports = router;

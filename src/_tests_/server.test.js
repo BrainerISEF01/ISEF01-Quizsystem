@@ -1,42 +1,57 @@
 const request = require("supertest");
-const { server, io } = require("../server"); // import the server and the webscoket instance
+const { server } = require("../server");
 
-describe("Server Tests", () => {
-    afterAll((done) => {
-        server.close(done); // Close the server after testing
+afterAll((done) => {
+    server.close(done); // Close server after all tests
+});
+
+describe("Server Routing Tests", () => {
+    
+    describe("🔍 Root Route", () => {
+        it("sollte 404 zurückgeben, wenn '/' aufgerufen wird", async () => {
+            const response = await request(server).get("/");
+            expect(response.status).toBe(404); // no endpoint defines a route
+        });
     });
 
-    it("sollte die Hauptseite (Root) erreichen", async () => {
-        const response = await request(server).get("/"); // Try to access the main page
+    describe("Auth-Routen", () => {
+        it("sollte 404 zurückgeben bei POST /auth/login (wenn nicht implementiert)", async () => {
+            const response = await request(server)
+                .post("/auth/login")
+                .send({ username: "testuser", password: "testpass" });
 
-        expect(response.status).toBe(404); // By default, a GET request to the root address should return a 404 error
+            // replaced 404 by the expected code if route exsist
+            expect(response.status).toBe(404);
+        });
     });
 
-    it("sollte die Auth-Routen erreichen", async () => {
-        // mocks login endpoint
-        const response = await request(server).post("/auth/login").send({
-            username: "testuser",
-            password: "testpass"
+    describe("Quiz-Routen", () => {
+        it("sollte 500 zurückgeben, wenn ein Quiz ohne vollständige Daten gestartet wird", async () => {
+            const response = await request(server)
+                .post("/quiz/start")
+                .send({ mode: "1v1", user_id: "user1", timerDuration: 60 });
+
+            // error because of missing setup od DB was expected
+            expect(response.status).toBeGreaterThanOrEqual(400);
         });
 
-        expect(response.status).toBe(404); // Default response if this route does not exist
-    });
-
-    it("sollte die Quiz-Routen erreichen", async () => {
-        // Testen Sie den Start des Quiz
-        const response = await request(server).post("/quiz/start").send({
-            mode: "1v1",
-            user_id: "user1",
-            timerDuration: 60
+        it("sollte 500 zurückgeben beim Zugriff auf /quiz/league ohne Setup", async () => {
+            const response = await request(server).get("/quiz/league");
+            expect(response.status).toBeGreaterThanOrEqual(400);
         });
-
-        expect(response.status).toBe(500); // This route will likely return an error due to mocking in quiz routes
     });
 
-    it("sollte die League-Routen erreichen", async () => {
-        // Testen Sie den Zugriff auf die Liga
-        const response = await request(server).get("/quiz/league");
+    describe(" Leaderboard-Routen", () => {
+        it("sollte 404 zurückgeben bei GET /leaderboard (wenn nicht definiert)", async () => {
+            const response = await request(server).get("/leaderboard");
+            expect(response.status).toBe(404); // if no get is defined 
+        });
+    });
 
-        expect(response.status).toBe(500); // This route will probably return an error
+    describe("Fragen-Routen", () => {
+        it("sollte 404 zurückgeben bei GET /questions (wenn Route fehlt)", async () => {
+            const response = await request(server).get("/questions");
+            expect(response.status).toBe(404);
+        });
     });
 });

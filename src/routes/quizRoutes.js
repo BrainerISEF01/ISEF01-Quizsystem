@@ -1,5 +1,5 @@
 const express = require("express");
-const { Question, Leaderboard, GameData } = require("../models"); 
+const { Question, Leaderboard, GameData, Sequelize } = require("../models"); 
 const router = express.Router();
 
 // import the WebSocket instance
@@ -11,10 +11,27 @@ module.exports = (io) => {
     // Start quiz (1v1 or against the computer)
     router.post("/start", async (req, res) => {
         try {
-            const { mode, user_id, opponent_id, timerDuration } = req.body;
+            const { mode, user_id, opponent_id } = req.body;
+            const rawTimer = req.body.timerDuration;
+
+            // checks whether the value is a pure string consisting only of digits
+            if (!/^\d+$/.test(rawTimer)) {
+                return res.status(400).json({ msg: "Ungültige Timer Dauer" });
+            }
+            
+            const timerDuration = Number(rawTimer);
+            
+            if (timerDuration <= 0 || !Number.isInteger(timerDuration)) {
+                return res.status(400).json({ msg: "Ungültige Timer Dauer" });
+            }
+            
+
 
             let opponent = opponent_id || "computer"; // if no player, play against the computer
-            const questions = await Question.findAll({ limit: 10 });
+            const questions = await Question.findAll({ 
+                order: Sequelize.literal("RAND()"), // choose 10 random questions from DB
+                 limit: 10
+                 });
 
             const quizId = `quiz_${Date.now()}`; // Creates a quiz ID
 
@@ -46,63 +63,83 @@ module.exports = (io) => {
     router.post("/submit", async (req, res) => {
         try {
             const { quizId, questionId, answer, userId } = req.body;
+    
             const question = await Question.findByPk(questionId);
-
             if (!question) return res.status(404).json({ msg: "Frage nicht gefunden" });
 
             // validate answer
             const correct = answer === question.correctAnswer;
             const points = correct ? 10 : 0;
-
-            // update Leaderboard
-            await Leaderboard.create({ user_id: userId, quiz_id: quizId, score: points });
-
-            // Send live update to all players
+    
+            // save to leaderboard
+            await Leaderboard.create({ user_id: userId, quiz_id: quizId, question_id: questionId, score: points });
+    
             io.to(quizId).emit("updateScore", { user: userId, score: points });
-
-            // Computer answers randomly if necessary
+    
+            // Computer answer
             if (activeQuizzes[quizId] && activeQuizzes[quizId].participants.includes("computer")) {
                 setTimeout(async () => {
-                    const randomAnswer = question.correctAnswer; 
+                    const randomAnswer = question.correctAnswer;
                     const computerCorrect = randomAnswer === question.correctAnswer;
                     const computerPoints = computerCorrect ? 10 : 0;
-
-                    await Leaderboard.create({ user_id: "computer", quiz_id: quizId, score: computerPoints });
-
+    
+                    await Leaderboard.create({ user_id: "computer", quiz_id: quizId, question_id: questionId, score: computerPoints });
+    
                     io.to(quizId).emit("computerAnswered", { answer: randomAnswer, score: computerPoints });
-                }, Math.floor(Math.random() * 3000) + 1000); // 1-3 Seconds delay
+                }, Math.floor(Math.random() * 3000) + 1000);
             }
-
-            res.json({ msg: correct ? "Richtig!" : "Falsch!", points });
-
+    
+            // Get all the user's answers for this quiz
+            const userAnswers = await Leaderboard.findAll({
+                where: { user_id: userId, quiz_id: quizId },
+                include: [{ 
+                    model: Question,
+                    as: 'question'
+                }],
+                order: [['createdAt', 'ASC']]
+            });
+    
+            // Build result array with correct/incorrect info
+            let score = 0;
+            const result = [];
+    
+            for (const entry of userAnswers) {
+                const q = await Question.findByPk(entry.question_id); // get the question
+                const isCorrect = entry.score > 0;
+                score += entry.score;
+    
+                result.push({
+                    questionId: q.id,
+                    questionText: q.question,
+                    options: q.options,
+                    selectedAnswer: isCorrect ? q.correctAnswer : "Falsche Antwort", 
+                    correctAnswer: q.correctAnswer,
+                    isCorrect,
+                    points: entry.score
+                });
+            }
+    
+            //return full result set to frontend
+            res.json({
+                quizId,
+                userId,
+                score,
+                totalQuestions: result.length,
+                correctCount: score / 10,
+                result
+            });
+    
         } catch (err) {
-            console.error("Fehler beim Absenden der Antwort:", err);
+            //console.error("Fehler beim Absenden der Antwort:", err);
+            console.error("Fehler beim Absenden der Antwort:", err.message, err.stack);
+
             res.status(500).json({ msg: "Fehler beim Absenden der Antwort" });
         }
     });
+    
+    
 
-    // Update score user gamedata dari gameid
-    router.post("/updateUserScore", async (req, res) => {
-        try {
-            const { gameId, userId, score } = req.body;
-
-            // Update the score in the database
-            const game = await GameData.findOne({ where: { gameId,userId } });
-            if (!game) {
-                return res.status(404).json({ msg: "Game not found" });
-            }
-            game.scoreUser = score;
-            await game.save();
-
-            // Send a response to the client
-            res.json({ msg: "Punkte aktualisiert", game});
-        } catch (err) {
-            console.error("Fehler beim Aktualisieren der Punkte:", err);
-            res.status(500).json({ msg: "Fehler beim Aktualisieren der Punkte" });
-        }
-    });
-
-    // Update score opponent gamedata dari gameid
+    // Update score opponent gamedata by gameid
     router.post("/updateOpponentScore", async (req, res) => {
         try {
             const { gameId, opponentId, score } = req.body;

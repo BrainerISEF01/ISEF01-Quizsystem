@@ -3,136 +3,169 @@ const express = require("express");
 const { Question, Leaderboard } = require("../models");
 const createQuizRoutes = require("../routes/quizRoutes");
 
-// Mock the database models
+// Mock DB
 jest.mock("../models", () => ({
-    Question: {
-        findAll: jest.fn(),
-        findByPk: jest.fn(),
-    },
-    Leaderboard: {
-        create: jest.fn(),
-        findAll: jest.fn(),
-    },
+  Question: {
+    findAll: jest.fn(),
+    findByPk: jest.fn(),
+  },
+  Leaderboard: {
+    create: jest.fn(),
+    findAll: jest.fn(),
+  },
 }));
 
-describe("Quiz Routes Tests", () => {
-    let app;
-    let ioMock;
+describe("Quiz Routes", () => {
+  let app;
+  let ioMock;
 
-    beforeEach(() => {
-        // Mock WebSocket (io) with .to().emit() chain
-        ioMock = { to: jest.fn().mockReturnThis(), emit: jest.fn() };
+  beforeEach(() => {
+    ioMock = { to: jest.fn().mockReturnThis(), emit: jest.fn() };
 
-        // Create a fresh Express app with the mocked routes
-        app = express();
-        app.use(express.json());
-        app.use("/quiz", createQuizRoutes(ioMock));
+    app = express();
+    app.use(express.json());
+    app.use("/quiz", createQuizRoutes(ioMock));
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  // ----------------------------------------
+  describe("POST /quiz/start", () => {
+    it("sollte ein Quiz starten und Fragen zurückgeben", async () => {
+      const mockQuestions = [
+        { id: 1, question: "Frage A", correctAnswer: "A" },
+        { id: 2, question: "Frage B", correctAnswer: "B" },
+      ];
+      Question.findAll.mockResolvedValue(mockQuestions);
+
+      const res = await request(app).post("/quiz/start").send({
+        mode: "1v1",
+        user_id: "user123",
+        opponent_id: "user456",
+        timerDuration: "60",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.questions).toEqual(mockQuestions);
+      expect(res.body.msg).toBe("Quiz gestartet");
     });
 
-    afterEach(() => {
-        // Reset all mocks after each test
-        jest.clearAllMocks();
+    it("sollte einen Fehler zurückgeben bei ungültiger Timerdauer", async () => {
+      const res = await request(app).post("/quiz/start").send({
+        mode: "1v1",
+        user_id: "user123",
+        timerDuration: "abc",
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.body.msg).toBe("Ungültige Timer Dauer");
     });
 
-    /** TEST 1: Start quiz */
-    it("should start a quiz and return questions", async () => {
-        const mockQuestions = [
-            { id: 1, question: "What is the capital of France?", correctAnswer: "Paris" },
-            { id: 2, question: "What is the capital of Germany?", correctAnswer: "Berlin" },
-        ];
+    it("sollte 500 zurückgeben, wenn ein DB-Fehler auftritt", async () => {
+      Question.findAll.mockRejectedValue(new Error("DB error"));
 
-        Question.findAll.mockResolvedValue(mockQuestions);
+      const res = await request(app).post("/quiz/start").send({
+        mode: "1v1",
+        user_id: "user123",
+        timerDuration: "60",
+      });
 
-        const response = await request(app).post("/quiz/start").send({
-            mode: "1v1",
-            user_id: "user1",
-            timerDuration: 60,
-        });
+      expect(res.status).toBe(500);
+      expect(res.body.msg).toBe("Fehler beim Starten des Quiz");
+    });
+  });
 
-        expect(response.status).toBe(200);
-        expect(response.body.msg).toBe("Quiz gestartet");
-        expect(response.body.questions).toEqual(mockQuestions);
+  // ----------------------------------------
+  describe("POST /quiz/submit", () => {
+    it("sollte eine richtige Antwort verarbeiten", async () => {
+      const quizId = "quiz_123";
+      const mockQuestion = {
+        id: 1,
+        question: "Hauptstadt von Frankreich?",
+        correctAnswer: "Paris",
+        options: ["Paris", "Berlin", "Rom"],
+      };
+
+      Question.findByPk.mockResolvedValue(mockQuestion);
+
+      Leaderboard.create.mockResolvedValue({});
+
+      Leaderboard.findAll.mockResolvedValue([
+        {
+          question_id: 1,
+          score: 10,
+          question: mockQuestion,
+        },
+      ]);
+
+      const res = await request(app).post("/quiz/submit").send({
+        quizId,
+        questionId: 1,
+        answer: "Paris",
+        userId: "user1",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.score).toBe(10);
+      expect(res.body.correctCount).toBe(1);
+      expect(res.body.result[0].isCorrect).toBe(true);
     });
 
-    /** TEST 2: Error starting a quiz */
-    it("should return error if quiz start fails", async () => {
-        Question.findAll.mockRejectedValue(new Error("DB error"));
+    it("sollte einen Fehler liefern, wenn Frage nicht gefunden wird", async () => {
+      Question.findByPk.mockResolvedValue(null);
 
-        const response = await request(app).post("/quiz/start").send({
-            mode: "1v1",
-            user_id: "user1",
-            timerDuration: 60,
-        });
+      const res = await request(app).post("/quiz/submit").send({
+        quizId: "quiz_456",
+        questionId: 99,
+        answer: "Berlin",
+        userId: "user1",
+      });
 
-        expect(response.status).toBe(500);
-        expect(response.body.msg).toBe("Fehler beim Starten des Quiz");
+      expect(res.status).toBe(404);
+      expect(res.body.msg).toBe("Frage nicht gefunden");
     });
 
-    /** TEST 3: Submit a correct answer */
-    it("should process a correct answer and return points", async () => {
-        const mockQuestion = {
-            id: 1,
-            question: "What is the capital of France?",
-            correctAnswer: "Paris",
-        };
+    it("sollte einen Fehler liefern bei unerwartetem Fehler", async () => {
+      Question.findByPk.mockRejectedValue(new Error("Unexpected error"));
 
-        Question.findByPk.mockResolvedValue(mockQuestion);
+      const res = await request(app).post("/quiz/submit").send({
+        quizId: "quiz_789",
+        questionId: 1,
+        answer: "Paris",
+        userId: "user1",
+      });
 
-        const response = await request(app).post("/quiz/submit").send({
-            quizId: "quiz_123",
-            questionId: 1,
-            answer: "Paris",
-            userId: "user1",
-        });
+      expect(res.status).toBe(500);
+      expect(res.body.msg).toBe("Fehler beim Absenden der Antwort");
+    });
+  });
 
-        expect(response.status).toBe(200);
-        expect(response.body.msg).toBe("Richtig!");
-        expect(response.body.points).toBe(10);
+  // ----------------------------------------
+  describe("GET /quiz/league", () => {
+    it("sollte Top 10 Spieler zurückgeben", async () => {
+      const mockLeaderboard = [
+        { user_id: "user1", score: 100 },
+        { user_id: "user2", score: 90 },
+      ];
 
-        expect(Leaderboard.create).toHaveBeenCalledWith({
-            user_id: "user1",
-            quiz_id: "quiz_123",
-            score: 10,
-        });
+      Leaderboard.findAll.mockResolvedValue(mockLeaderboard);
+
+      const res = await request(app).get("/quiz/league");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(mockLeaderboard);
+      expect(ioMock.emit).toHaveBeenCalledWith("updateLeague", mockLeaderboard);
     });
 
-    /** TEST 4: Question not found */
-    it("should return 404 if question is not found", async () => {
-        Question.findByPk.mockResolvedValue(null);
+    it("sollte einen Fehler beim Abrufen der Liga behandeln", async () => {
+      Leaderboard.findAll.mockRejectedValue(new Error("DB Fehler"));
 
-        const response = await request(app).post("/quiz/submit").send({
-            quizId: "quiz_123",
-            questionId: 1,
-            answer: "Paris",
-            userId: "user1",
-        });
+      const res = await request(app).get("/quiz/league");
 
-        expect(response.status).toBe(404);
-        expect(response.body.msg).toBe("Frage nicht gefunden");
+      expect(res.status).toBe(500);
+      expect(res.body.msg).toBe("Fehler beim Abrufen des Ligamodus");
     });
-
-    /** TEST 5: Get top 10 players (league mode) */
-    it("should retrieve top 10 players for league mode", async () => {
-        const mockScores = [
-            { user_id: "user1", score: 100 },
-            { user_id: "user2", score: 90 },
-        ];
-
-        Leaderboard.findAll.mockResolvedValue(mockScores);
-
-        const response = await request(app).get("/quiz/league");
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(mockScores);
-    });
-
-    /** TEST 6: Error retrieving league mode */
-    it("should return error if league mode query fails", async () => {
-        Leaderboard.findAll.mockRejectedValue(new Error("DB error"));
-
-        const response = await request(app).get("/quiz/league");
-
-        expect(response.status).toBe(500);
-        expect(response.body.msg).toBe("Fehler beim Abrufen des Ligamodus");
-    });
+  });
 });

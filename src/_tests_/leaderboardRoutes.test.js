@@ -1,79 +1,102 @@
 const request = require("supertest");
-const app = require("../app");
+const express = require("express");
+const leaderboardRoutes = require("../routes/leaderboardRoutes");
 const { Leaderboard, GameData } = require("../models");
 
-// Mock models including sequelize query
+// Setup Express app with the tested routes
+const app = express();
+app.use(express.json());
+app.use("/", leaderboardRoutes);
+
+// Mocks
 jest.mock("../models", () => ({
-    Leaderboard: {
-        findAll: jest.fn(),
+  Leaderboard: {
+    findAll: jest.fn(),
+  },
+  GameData: {
+    sequelize: {
+      query: jest.fn(),
+      QueryTypes: {
+        SELECT: "SELECT",
+      },
     },
-    GameData: {
-        sequelize: {
-            query: jest.fn(),
-            QueryTypes: {
-                SELECT: "SELECT",
-            },
-        },
-    },
+  },
 }));
 
-describe("Leaderboard Routes Tests", () => {
-    afterEach(() => {
-        // Reset all mocks after each test
-        jest.clearAllMocks();
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+// ============================================
+// TESTS: GET / (Leaderboard with Question)
+// ============================================
+describe("GET / (Leaderboard)", () => {
+  it("sollte die Leaderboard-Daten erfolgreich abrufen", async () => {
+    const mockScores = [
+      {
+        id: 1,
+        userId: "user1",
+        score: 100,
+        question: { id: 10, text: "Frage 1" },
+      },
+      {
+        id: 2,
+        userId: "user2",
+        score: 90,
+        question: { id: 11, text: "Frage 2" },
+      },
+    ];
+
+    Leaderboard.findAll.mockResolvedValue(mockScores);
+
+    const response = await request(app).get("/");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(mockScores);
+    expect(Leaderboard.findAll).toHaveBeenCalledWith({
+      include: [{ model: expect.anything(), as: "question" }],
+      order: [["score", "DESC"]],
     });
+  });
 
-    /** TEST 1: Retrieve leaderboard successfully */
-    it("should fetch the leaderboard successfully", async () => {
-        const mockScores = [
-            { id: 1, userId: "user1", score: 100 },
-            { id: 2, userId: "user2", score: 90 },
-        ];
+  it("sollte einen Fehler zurückgeben, wenn findAll fehlschlägt", async () => {
+    Leaderboard.findAll.mockRejectedValue(new Error("DB Fehler"));
 
-        Leaderboard.findAll.mockResolvedValue(mockScores);
+    const response = await request(app).get("/");
 
-        const response = await request(app).get("/");
+    expect(response.status).toBe(500);
+    expect(response.body.msg).toBe("Fehler beim Abrufen des Leaderboards");
+  });
+});
 
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(mockScores);
-    });
+// ============================================
+// TESTS: GET /result (GameData UNION Query)
+// ============================================
+describe("GET /result (Spielergebnisse)", () => {
+  it("sollte Spielergebnisse korrekt abrufen", async () => {
+    const mockResults = [
+      { MODE: "classic", USER: "player1@example.com", score: 75 },
+      { MODE: "classic", USER: "player2@example.com", score: 60 },
+    ];
 
-    /** TEST 2: Handle leaderboard DB error */
-    it("should return an error if leaderboard query fails", async () => {
-        Leaderboard.findAll.mockRejectedValue(new Error("DB error"));
+    GameData.sequelize.query.mockResolvedValue(mockResults);
 
-        const response = await request(app).get("/");
+    const response = await request(app).get("/result");
 
-        expect(response.status).toBe(500);
-        expect(response.body.msg).toBe("Fehler beim Abrufen des Leaderboards");
-    });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(mockResults);
+    expect(GameData.sequelize.query).toHaveBeenCalledWith(
+      expect.stringContaining("SELECT MODE"),
+      { type: "SELECT" }
+    );
+  });
 
-    /** TEST 3: Retrieve combined game results from gamedata */
-    it("should fetch combined game results from GameData", async () => {
-        const mockResults = [
-            { MODE: "classic", USER: "user1@test.de", score: 80 },
-            { MODE: "classic", USER: "user2@test.de", score: 70 },
-        ];
+  it("sollte einen Fehler zurückgeben, wenn die SQL-Query fehlschlägt", async () => {
+    GameData.sequelize.query.mockRejectedValue(new Error("SQL Fehler"));
 
-        GameData.sequelize.query.mockResolvedValue(mockResults);
+    const response = await request(app).get("/result");
 
-        const response = await request(app).get("/result");
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(mockResults);
-        expect(GameData.sequelize.query).toHaveBeenCalledWith(
-            expect.stringContaining("SELECT MODE"),
-            { type: "SELECT" }
-        );
-    });
-
-    /** TEST 4: Handle /result query error */
-    it("should return an error if GameData query fails", async () => {
-        GameData.sequelize.query.mockRejectedValue(new Error("Query failed"));
-
-        const response = await request(app).get("/result");
-
-        expect(response.status).toBe(500);
-        expect(response.body.msg).toBe("Fehler beim Abrufen der Ergebnisse");
-    });
+    expect(response.status).toBe(500);
+    expect(response.body.msg).toBe("Fehler beim Abrufen der Ergebnisse");
+  });
 });

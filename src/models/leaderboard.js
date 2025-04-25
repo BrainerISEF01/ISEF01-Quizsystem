@@ -1,43 +1,44 @@
 'use strict';
+const { Model, DataTypes } = require('sequelize');
 
-const {
-  Model
-} = require('sequelize');
+module.exports = (sequelize) => {
+  class Leaderboard extends Model {}
 
-module.exports = (sequelize, DataTypes) => {
-  class Leaderboard extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      // define association here
-    }
-  }
-
-  // Defines the model
   Leaderboard.init({
     user_id: {
-      type: DataTypes.STRING, 
-      allowNull: false,
+      type: DataTypes.INTEGER,
     },
     quiz_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: DataTypes.INTEGER,
     },
     score: {
       type: DataTypes.INTEGER,
-      allowNull: false,
     },
     mode_name: {
       type: DataTypes.STRING,
-      allowNull: true, 
+    },
+    createdAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
     }
   }, {
     sequelize,
     modelName: 'Leaderboard',
+    tableName: 'Leaderboards',
+    timestamps: true,
   });
+
+  Leaderboard.associate = function(models) {
+    // Association to Question: A leaderboard has a question
+    Leaderboard.belongsTo(models.Question, {
+      foreignKey: 'question_id',
+      as: 'question',  // Alias ​​for the association
+    });
+  };
 
   return Leaderboard;
 };
