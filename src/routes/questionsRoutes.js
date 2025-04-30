@@ -8,12 +8,19 @@ router.post("/add", async (req, res) => {
     try {
         const { question, options = [], correctAnswer, created_by } = req.body;
 
+        // Validation: check if the options match the correct answer
+        if (!options.includes(correctAnswer)) {
+            return res.status(400).json({
+                msg: "Die korrekte Antwort muss eine der angegebenen Optionen sein.",
+            });
+        }
+
         const newQuestion = await Question.create({
             question,
             options,
-            correctAnswer, 
-            created_by
-             });
+            correctAnswer,
+            created_by,
+        });
 
         res.json({ msg: "Frage hinzugefügt", newQuestion });
     } catch (err) {
@@ -21,6 +28,7 @@ router.post("/add", async (req, res) => {
         res.status(500).json({ msg: "Fehler beim Hinzufügen der Frage" });
     }
 });
+
 
 // Add multiple questions
 router.post("/addMultiple", async(req, res) => {

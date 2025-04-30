@@ -11,7 +11,6 @@ import QuestionsMultiple from "./components/QuestionsMultiple";
 import FrageErfolgreich from './components/FrageErfolgreich';
 import Quiz1v1 from './components/Quiz1v1';
 import Quiz1v1Page from './components/Quiz1v1Page';
-import SocketTest from './components/websocket';
 
 function App() {
   
