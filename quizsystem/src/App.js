@@ -11,6 +11,8 @@ import QuestionsMultiple from "./components/QuestionsMultiple";
 import FrageErfolgreich from './components/FrageErfolgreich';
 import Quiz1v1 from './components/Quiz1v1';
 import Quiz1v1Page from './components/Quiz1v1Page';
+import RegisterPage from './components/RegisterPage';
+import WaitingGame from './components/WaitingGame';
 
 function App() {
   
@@ -29,6 +31,8 @@ function App() {
         <Route path="/frageerfolgreich" element={<FrageErfolgreich />} />
         <Route path="/quiz1v1" element={<Quiz1v1 />} />
         <Route path="/quiz1v1page" element={<Quiz1v1Page />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/waitinggame" element={<WaitingGame />} />
       </Routes>
     </Router>
   );

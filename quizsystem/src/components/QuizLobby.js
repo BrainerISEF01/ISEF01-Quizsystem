@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "../components/Header";
+import Header from "./Header";
 import { Link, useNavigate } from "react-router-dom";
 
 import iconNewQuiz from "../assets/icon-newquiz.png"
@@ -11,8 +11,7 @@ import iconQuestions from "../assets/icon-questions.png";
 const QuizLobby = () => {
   const username = sessionStorage.getItem('email'); 
   const navigate = useNavigate();
-  //console.log(sessionStorage.getItem('user_id'));
-
+  
   useEffect(() => {
     const token = sessionStorage.getItem('token');
     if (!token) {
@@ -41,7 +40,7 @@ const QuizLobby = () => {
   );
 };
 
-// Button-Komponente für Quiz-Optionen mit gleicher Höhe
+// Button-Komponente für Quiz-Optionen
 const QuizOption = ({ text, icon, link }) => {
   return (
     <div className="col-md-3 mb-3 d-flex">

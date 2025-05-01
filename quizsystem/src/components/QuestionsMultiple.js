@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "../components/Header"; 
+import Header from "./Header"; 
 import { Link } from 'react-router-dom';
 
 const QuestionsMultiple = () => {

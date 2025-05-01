@@ -84,7 +84,8 @@ const LoginPage = () => {
           </div>
 
           {error && <p style={{ color: 'red' }}>{error}</p>}
-          <button type="submit" className="btn btn-primary w-100">Login</button>
+          <button type="submit" className="btn btn-primary w-100">Login</button><br/>
+          <button type="button" className="btn btn-secondary w-100 mt-2" onClick={() => navigate('/register')}>Registrieren</button>
         </form>
       </div>
     </div>

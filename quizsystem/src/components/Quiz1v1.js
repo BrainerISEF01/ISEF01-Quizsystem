@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "../components/Header";
+import Header from "./Header";
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { BASE_URL } from '../fetchApi';
 import { io } from "socket.io-client";
@@ -10,10 +10,13 @@ const Quiz1v1 = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const data = location.state;
+    const socket = io(base_url);
 
     const [msg, setMsg] = useState("");
     const [gameId, setGameId] = useState([]);
+    const [timerDuration,setTimerDuration] = useState("");
     const [gameIdData, setGameIdData] = useState("");
+    const [resData, setResData] = useState([]);
 
     useEffect(() => {
         const token = sessionStorage.getItem('token');
@@ -24,13 +27,48 @@ const Quiz1v1 = () => {
         setMsg("Test");
 
         gameData();
-        const interval = setInterval(() => {
-            gameData();
-        }, 3000);
+        // const interval = setInterval(() => {
+        //     gameData();
+        // }, 3000);
     
-        return () => clearInterval(interval);
+        // return () => clearInterval(interval);
 
     }, [navigate]);
+
+    useEffect(() => {
+        socket.on("connect", () => {
+            console.log("Connected to server");
+        });
+
+        socket.on("gameCreatedOk",(data) => {
+            console.log(data);
+            if(data.status == 1){
+                gameData();
+            }
+        });
+
+        socket.on("playerJoined", (data) => {
+            console.log(data);
+            //navigate(`/quiz1v1`, { state: resData });
+        });
+
+        socket.on("computerJoined", (data) => {
+            console.log(data);
+            //navigate(`/quiz1v1`, { state: resData });
+        });
+
+        socket.on("disconnect", () => {
+            console.log("Disconnected from server");
+        });
+
+        return () => {
+            socket.off("connect");
+            socket.off("gameCreatedOk");
+            socket.off("playerJoined");
+            socket.off("computerJoined");
+            socket.off("disconnect");
+        };
+    },[]);
 
     // Show list gamedata
     const gameData = async () => {
@@ -72,7 +110,10 @@ const Quiz1v1 = () => {
             result.opponentId = sessionStorage.getItem('user_id');
             result.timerDuration = arr.timerDuration;
             //console.log(result);
-            navigate(`/quiz1v1page`, { state: result });
+            //console.log(result);
+            //setResData(result);
+            //joinGame(arr1.gameId,arr.mode,result);
+            navigate(`/quiz1v1Page`, { state: result });
         } catch (error) {
             console.error("Error starting the quiz:", error);
         }

@@ -2,14 +2,19 @@ import React, { useEffect, useState } from "react";
 import Header from "./Header";
 import { useNavigate,useLocation } from "react-router-dom";
 import { BASE_URL } from '../fetchApi';
+import { io } from "socket.io-client";
 
 const QuizEnde = () => {
   const base_url = BASE_URL;
+  const socket = io(base_url);
   const location = useLocation();
   const data = location.state;
   const navigate = useNavigate();
 
   const gameId = data.gameId;
+  const quizId = data.quizId;
+  const [leaderboardData,setLeaderboardData] = useState([]);
+  const [score,setScore] = useState(0);
   const [mode,setMode] = useState("");
   const [userName,setUsername] = useState("");
   const [scoreUser, setScoreUser] = useState("");
@@ -19,12 +24,24 @@ const QuizEnde = () => {
 
   useEffect(() => {
     ende();
-    const interval = setInterval(() => {
-      ende();
-    }, 3000);
-
-    return () => clearInterval(interval);
+    leaderBoards();
+    socket.emit("gameDone",{
+      username: sessionStorage.getItem('email'),
+      gameId: gameId
+    });
   });
+
+  useEffect(() => {
+    socket.on("gameDoneOk",(data) => {
+      if(data.status == 1){
+        ende();
+        leaderBoards();
+      }
+    });
+    return () => {
+      socket.off("gameDoneOk");
+  };
+  },[]);
 
   useEffect(() => {
     const token = sessionStorage.getItem('token');
@@ -55,6 +72,7 @@ const QuizEnde = () => {
       setOpName(result.opponentEmail);
       setOpScore(result.scoreOpponent);
       setStatus(result.status);
+      console.log(result);
     } catch (error) {
       console.error("Error fetching game data:", error);
     }
@@ -82,6 +100,47 @@ const QuizEnde = () => {
       const result = await response.json();
       navigate(0);
     } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
+  // leaderboards / result
+  const leaderBoards = async() => {
+    try{
+      const response = await fetch(`${base_url}/leaderboard`, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const resLeaderboard = await response.json();
+      //console.log(resLeaderboard.length);
+      //console.log("Debug: quizId =", quizId);
+      //console.log("Debug: resLeaderboard =", resLeaderboard);
+
+      if (Array.isArray(resLeaderboard) && quizId) {
+        const filteredLeaderboard = resLeaderboard.filter(item => item.quiz_id === quizId);
+        if (filteredLeaderboard.length > 0) {
+          setLeaderboardData(filteredLeaderboard);
+          let totalScore = 0;
+          filteredLeaderboard.forEach(item => {
+            totalScore += item.score;
+          });
+          setScore(totalScore);
+        } else {
+          console.warn("No matching leaderboard entries found for quizId:", quizId);
+        }
+      } else {
+        console.error("Invalid leaderboard data or quizId is undefined.");
+      }
+      //console.log(resLeaderboard);
+      //console.log(leaderboardData);
+    }catch(error){
       console.error("Error updating status:", error);
     }
   };
@@ -150,6 +209,33 @@ const QuizEnde = () => {
               </div>
             </div>
             <div className="col-md-2"></div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+              <div className="table-responsive">
+                <table className="table table-bordered table-striped">
+                  <thead>
+                    <tr>
+                      <th>Frage</th>
+                      <th>Richtige Antwort</th>
+                      <th>Punktzahl</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leaderboardData.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.question.question}</td>
+                        <td>{item.question.correctAnswer}</td>
+                        <td>{item.score}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="col-md-2"></div>
           </div>
 
           {/* Buttons */}

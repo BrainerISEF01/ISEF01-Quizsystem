@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "../components/Header";
+import Header from "./Header";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BASE_URL } from '../fetchApi';
+import { io } from "socket.io-client";
 
 const QuizPage = () => {
   const base_url = BASE_URL;
   const location = useLocation();
   const data = location.state;
+  const socket = io(base_url);
 
   const [question, setQuestion] = useState({});
   const [timeLeft, setTimeLeft] = useState(data.timerDuration);
@@ -15,6 +17,7 @@ const QuizPage = () => {
 
   const gameId = data.gameId;
   const userId = data.userId;
+  var quizId = '';
 
   useEffect(() => {
     const token = sessionStorage.getItem('token');
@@ -90,12 +93,41 @@ const QuizPage = () => {
 
         const result = await response.json();
         //console.log(result);
-        if(result.points > 0){
-          aTrue++;
-          uScore += result.points;
+        if(result.score > 0){
+          // aTrue++;
+          // uScore += result.score;
         }
 
+        quizId = result.quizId;
+        //uScore = result.score;
       }
+
+      // socket.emit("endGame",{
+      //   gameId:quizId
+      // });
+
+      // Update score
+      const resScore = await fetch(`${base_url}/quiz/getFinalScores`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({quizId:quizId})
+      });
+
+      if (!resScore.ok) {
+        throw new Error(`Error: ${resScore.statusText}`);
+      }
+
+      const resScoreEnde = await resScore.json();
+      resScoreEnde.finalScores.forEach((item) => {
+        if(item.user_id === sessionStorage.getItem('user_id')){
+          //console.log(`User: ${item.user_id}, Score: ${item.score}`);
+          if(item.score > 0){
+            uScore += item.score;
+          }
+        }
+      });
 
       // Update score in gamedata
       const dataPostScore = {
@@ -106,7 +138,13 @@ const QuizPage = () => {
       await updateScore(dataPostScore);
 
       //alert("All answers submitted successfully");
-      navigate("/quizende", { state: {gameId:gameId} });
+      socket.emit("gameDone",{
+        username:sessionStorage.getItem('email'),
+        gameId: gameId
+      });
+
+      //console.log("Quiz ID "+quizId);
+      navigate("/quizende", { state: {gameId:gameId,quizId:quizId} });
     } catch (error) {
       console.log(error);
       alert("An error occurred while submitting the answers");
