@@ -174,6 +174,47 @@ module.exports = (io) => {
         }
     });
 
+    router.post("/updateUserScore", async (req, res) => {
+        try {
+            const { gameId, userId, score } = req.body;
+
+            // Update the score in the database
+            const game = await GameData.findOne({ where: { gameId,userId } });
+            if (!game) {
+                return res.status(404).json({ msg: "Game not found" });
+            }
+            game.scoreUser = score;
+            await game.save();
+
+            // Send a response to the client
+            res.json({ msg: "Punkte aktualisiert", game});
+        } catch (err) {
+            console.error("Fehler beim Aktualisieren der Punkte:", err);
+            res.status(500).json({ msg: "Fehler beim Aktualisieren der Punkte" });
+        }
+    });
+
+    router.post("/getFinalScores", async (req, res) => {
+        try {
+            const { quizId } = req.body;
+
+            if (!quizId) {
+                return res.status(400).json({ msg: "Quiz-ID erforderlich" });
+            }
+
+            const finalScores = await getFinalScores(quizId);
+
+            if (!finalScores || finalScores.length === 0) {
+                return res.status(404).json({ msg: "Keine Ergebnisse gefunden" });
+            }
+
+            res.json({ quizId, finalScores });
+        } catch (err) {
+            console.error("Fehler beim Abrufen der Endergebnisse:", err);
+            res.status(500).json({ msg: "Fehler beim Abrufen der Endergebnisse" });
+        }
+    });
+
     // helperfunction for the final result
     async function getFinalScores(quizId) {
         return await Leaderboard.findAll({ where: { quiz_id: quizId }, order: [["score", "DESC"]] });

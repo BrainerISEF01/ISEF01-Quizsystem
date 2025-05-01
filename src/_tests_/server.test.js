@@ -1,5 +1,6 @@
 const request = require("supertest");
 const { server } = require("../server");
+const { io } = require("socket.io-client");
 
 afterAll((done) => {
     server.close(done); // Close server after all tests
@@ -20,7 +21,6 @@ describe("Server Routing Tests", () => {
                 .post("/auth/login")
                 .send({ username: "testuser", password: "testpass" });
 
-            // replaced 404 by the expected code if route exsist
             expect(response.status).toBe(404);
         });
     });
@@ -31,7 +31,6 @@ describe("Server Routing Tests", () => {
                 .post("/quiz/start")
                 .send({ mode: "1v1", user_id: "user1", timerDuration: 60 });
 
-            // error because of missing setup od DB was expected
             expect(response.status).toBeGreaterThanOrEqual(400);
         });
 
@@ -53,5 +52,40 @@ describe("Server Routing Tests", () => {
             const response = await request(server).get("/questions");
             expect(response.status).toBe(404);
         });
+    });
+});
+
+describe("🧪 WebSocket Events", () => {
+    let clientSocket;
+
+    beforeAll((done) => {
+        clientSocket = io("http://localhost:4000");
+        clientSocket.on("connect", done);
+    });
+
+    afterAll(() => {
+        if (clientSocket.connected) {
+            clientSocket.disconnect();
+        }
+    });
+
+    it("should receive 'gameCreatedOk' when 'gameCreated' is emitted", (done) => {
+        const testData = { username: "tester", gameId: "game123" };
+
+        // Listen for the server response
+        clientSocket.on("gameCreatedOk", (data) => {
+            try {
+                // Assert the server response contains the correct fields
+                expect(data).toHaveProperty("status", 1);
+                expect(data).toHaveProperty("username", testData.username);
+                expect(data).toHaveProperty("gameId", testData.gameId);
+                done();
+            } catch (error) {
+                done(error); // fail the test
+            }
+        });
+
+        // Emit the event
+        clientSocket.emit("gameCreated", testData);
     });
 });

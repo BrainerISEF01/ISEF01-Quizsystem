@@ -1,7 +1,7 @@
 const express = require("express");
-const http = require("http"); // WebSockets require an HTTP server object
-const { Server } = require("socket.io"); 
-const { Quiz, Question, Leaderboard } = require("./models"); // import modells
+const http = require("http");
+const { Server } = require("socket.io");
+const { Quiz, Question, Leaderboard } = require("./models");
 const authRoutes = require("./routes/authRoutes.js");
 const leaderboardRoutes = require("./routes/leaderboardRoutes.js");
 const questionsRoutes = require("./routes/questionsRoutes.js");
@@ -11,23 +11,18 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
 
-
 const app = express();
-const server = http.createServer(app); // Create HTTP server
-const io = new Server(server, { cors: { origin: "*" } }); // WebSocket-Server with CORS
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 
-app.use(
-    cors({
-         origin: "*",
-        })
-    );
-
-
+app.use(cors({ origin: "*" }));
 app.use(express.json());
+
+// Routen
 app.use("/auth", authRoutes);
 app.use("/leaderboard", leaderboardRoutes);
 app.use("/questions", questionsRoutes);
-app.use("/quiz", require("./routes/quizRoutes")(io)); // Pass io instance
+app.use("/quiz", require("./routes/quizRoutes")(io));
 app.use("/matchmaking", gameRoutes);
 
 // // bypass for ngrok-Warningpage
@@ -151,6 +146,18 @@ io.on("connection", (socket) => {
                 io.to(gameId).emit("computerJoined", { msg: "Der Computer ist bereit!" });
             }, 1000);
         }
+    });
+
+    socket.on("gameCreated",(data) => {
+        const {username,gameId} = data;
+        console.log(`${username} created game ${gameId}`);
+        io.emit("gameCreatedOk",{status:1,username:username,gameId:gameId});
+    });
+
+    socket.on("gameDone",(data) => {
+        const {username,gameId} = data;
+        console.log(`${username} game done ${gameId}`);
+        io.emit("gameDoneOk",{status:1,username:username,gameId:gameId});
     });
 
     // player sends an answer

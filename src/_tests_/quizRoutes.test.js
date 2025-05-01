@@ -1,9 +1,8 @@
 const request = require("supertest");
 const express = require("express");
-const { Question, Leaderboard } = require("../models");
+const { Question, Leaderboard, GameData } = require("../models");
 const createQuizRoutes = require("../routes/quizRoutes");
 
-// Mock DB
 jest.mock("../models", () => ({
   Question: {
     findAll: jest.fn(),
@@ -12,6 +11,9 @@ jest.mock("../models", () => ({
   Leaderboard: {
     create: jest.fn(),
     findAll: jest.fn(),
+  },
+  GameData: {
+    findOne: jest.fn(),
   },
 }));
 
@@ -31,7 +33,7 @@ describe("Quiz Routes", () => {
     jest.clearAllMocks();
   });
 
-  // ----------------------------------------
+  // ------------------------------
   describe("POST /quiz/start", () => {
     it("sollte ein Quiz starten und Fragen zurückgeben", async () => {
       const mockQuestions = [
@@ -77,7 +79,7 @@ describe("Quiz Routes", () => {
     });
   });
 
-  // ----------------------------------------
+  // ------------------------------
   describe("POST /quiz/submit", () => {
     it("sollte eine richtige Antwort verarbeiten", async () => {
       const quizId = "quiz_123";
@@ -89,9 +91,7 @@ describe("Quiz Routes", () => {
       };
 
       Question.findByPk.mockResolvedValue(mockQuestion);
-
       Leaderboard.create.mockResolvedValue({});
-
       Leaderboard.findAll.mockResolvedValue([
         {
           question_id: 1,
@@ -142,7 +142,7 @@ describe("Quiz Routes", () => {
     });
   });
 
-  // ----------------------------------------
+  // ------------------------------
   describe("GET /quiz/league", () => {
     it("sollte Top 10 Spieler zurückgeben", async () => {
       const mockLeaderboard = [
@@ -166,6 +166,118 @@ describe("Quiz Routes", () => {
 
       expect(res.status).toBe(500);
       expect(res.body.msg).toBe("Fehler beim Abrufen des Ligamodus");
+    });
+  });
+
+  // ------------------------------
+  describe("POST /quiz/updateOpponentScore", () => {
+    it("sollte den Punktestand des Gegners aktualisieren", async () => {
+      const mockGame = { scoreOpponent: 0, save: jest.fn() };
+      GameData.findOne.mockResolvedValue(mockGame);
+
+      const res = await request(app).post("/quiz/updateOpponentScore").send({
+        gameId: "game1",
+        opponentId: "user2",
+        score: 50,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.msg).toBe("Punkte aktualisiert");
+      expect(mockGame.scoreOpponent).toBe(50);
+      expect(mockGame.save).toHaveBeenCalled();
+    });
+
+    it("sollte 404 zurückgeben, wenn das Spiel nicht gefunden wird", async () => {
+      GameData.findOne.mockResolvedValue(null);
+
+      const res = await request(app).post("/quiz/updateOpponentScore").send({
+        gameId: "game1",
+        opponentId: "user2",
+        score: 50,
+      });
+
+      expect(res.status).toBe(404);
+      expect(res.body.msg).toBe("Game not found");
+    });
+  });
+
+  // ------------------------------
+  describe("POST /quiz/updateUserScore", () => {
+    it("sollte den Punktestand des Nutzers aktualisieren", async () => {
+      const mockGame = { scoreUser: 0, save: jest.fn() };
+      GameData.findOne.mockResolvedValue(mockGame);
+
+      const res = await request(app).post("/quiz/updateUserScore").send({
+        gameId: "game1",
+        userId: "user1",
+        score: 60,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.msg).toBe("Punkte aktualisiert");
+      expect(mockGame.scoreUser).toBe(60);
+      expect(mockGame.save).toHaveBeenCalled();
+    });
+
+    it("sollte 404 zurückgeben, wenn das Spiel nicht gefunden wird", async () => {
+      GameData.findOne.mockResolvedValue(null);
+
+      const res = await request(app).post("/quiz/updateUserScore").send({
+        gameId: "game1",
+        userId: "user1",
+        score: 60,
+      });
+
+      expect(res.status).toBe(404);
+      expect(res.body.msg).toBe("Game not found");
+    });
+  });
+
+  // ------------------------------
+  describe("POST /quiz/getFinalScores", () => {
+    it("sollte Endergebnisse zurückgeben", async () => {
+      const mockScores = [
+        { user_id: "user1", score: 100 },
+        { user_id: "user2", score: 90 },
+      ];
+      Leaderboard.findAll.mockResolvedValue(mockScores);
+
+      const res = await request(app).post("/quiz/getFinalScores").send({
+        quizId: "quiz123",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.quizId).toBe("quiz123");
+      expect(res.body.finalScores).toEqual(mockScores);
+    });
+
+    it("sollte 400 zurückgeben, wenn quizId fehlt", async () => {
+      const res = await request(app).post("/quiz/getFinalScores").send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.msg).toBe("Quiz-ID erforderlich");
+    });
+
+    it("sollte 404 zurückgeben, wenn keine Ergebnisse gefunden wurden", async () => {
+      Leaderboard.findAll.mockResolvedValue([]);
+
+      const res = await request(app).post("/quiz/getFinalScores").send({
+        quizId: "quiz123",
+      });
+
+      expect(res.status).toBe(404);
+      expect(res.body.msg).toBe("Keine Ergebnisse gefunden");
+    });
+
+    it("sollte 500 zurückgeben bei Fehler", async () => {
+      Leaderboard.findAll.mockRejectedValue(new Error("Fehler"));
+
+      const res = await request(app).post("/quiz/getFinalScores").send({
+        quizId: "quiz123",
+      });
+
+      expect(res.status).toBe(500);
+      expect(res.body.msg).toBe("Fehler beim Abrufen der Endergebnisse");
     });
   });
 });
