@@ -23,7 +23,7 @@ const QuizStart = () => {
 
         matchmaking();
 
-        setMsg("Willkommen, bitte füllen Sie das Formular aus.");
+        setMsg("Willkommen, wählen Sie einen Spielmodi.");
     }, [navigate]);
 
     useEffect(() => {
