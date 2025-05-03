@@ -25,7 +25,7 @@ app.use("/questions", questionsRoutes);
 app.use("/quiz", require("./routes/quizRoutes")(io));
 app.use("/matchmaking", gameRoutes);
 
-// // bypass for ngrok-Warningpage
+// // bypass for ngrok-Warningpage - no need the bypass anymore becauce I have bought the premium plan where the warningpage ist automatically disables 
 // app.use((req, res, next) => {
 //     res.set("ngrok-skip-browser-warning", "true");
 //     next();
@@ -34,7 +34,11 @@ app.use("/matchmaking", gameRoutes);
 const PORT = process.env.PORT || 4000;
 
 // Serve static React files
-// app.use(express.static(path.join(__dirname, "..", "Frontend", "build")));
+ //app.use(express.static(path.join(__dirname, "..", "Frontend", "build")));
+
+// // app.get('*', (req, res) => { -> react catch-all Route, redirect all unkonwn routes back to the React app
+//   res.sendFile(path.join(__dirname, "..", "Frontend", "build", "index.html"));
+// });
 
 // app.get("*", (req, res) => {
 /**
