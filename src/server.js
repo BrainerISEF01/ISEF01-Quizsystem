@@ -72,7 +72,7 @@ app.use("/questions", questionsRoutes);
 app.use("/quiz", quizRoutes(io)); // Funktion die io verwendet
 app.use("/matchmaking", gameRoutes);
 
-// Optional: React-Frontend bereitstellen (z. B. wenn zusammen deployt)
+// React-Frontend deployment -> just for the production environment
 // app.use(express.static(path.join(__dirname, "..", "Frontend", "build")));
 // app.get("*", (req, res) => {
 //   res.sendFile(path.join(__dirname, "..", "Frontend", "build", "index.html"));
