@@ -77,13 +77,15 @@ Zeigt alle Spielergebnisse mit Benutzer-Scores an.
 
 WebSocket-Ereignisse
 
-Ereignis      Beschreibung
-joinGame:     Spieler tritt einem Spiel bei
-submitAnswer: Spieler gibt eine Antwort ab
-endGame	Beendet ein Spiel
-updateScore:  Aktualisiert den Punktestand live
+Ereignis        Beschreibung
+joinGame:       Spieler tritt einem Spiel bei
+submitAnswer:   Spieler gibt eine Antwort ab
+endGame:   	    Beendet ein Spiel
+updateScore:    Aktualisiert den Punktestand live
 computerJoined: Der Computer tritt einem Spiel bei
-gameOver:      Sendet finalen Punktestand
+gameOver:       Sendet finalen Punktestand
+gameCreate:     Erstellt ein Spiel
+gameDone:       Beendet ein Spiel
 
 
 Fehlerbehandlung
