@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "../components/Header";
+import Header from "./Header";
 import { useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../fetchApi';
+import { io } from "socket.io-client";
 
 const QuizStart = () => {
     const base_url = BASE_URL;
+    const socket = io(base_url);
     const [opponent, setOpponent] = useState("");
     const [time, setTime] = useState(0);
     const [gameId, setGameId] = useState("");
+    const [msg, setMsg] = useState("");
 
     const navigate = useNavigate();
 
@@ -19,7 +22,24 @@ const QuizStart = () => {
         }
 
         matchmaking();
+
+        setMsg("Willkommen, wählen Sie einen Spielmodi.");
     }, [navigate]);
+
+    useEffect(() => {
+        socket.on("playerJoined",(data) => {
+            console.log(data);
+        });
+
+        socket.on("computerJoined",(data) => {
+            console.log(data);
+        });
+
+        return () => {
+            socket.off("playerJoined");
+            socket.off("computerJoined");
+        };
+    },[]);
 
     const matchmaking = async () => {
         try {
@@ -78,7 +98,7 @@ const QuizStart = () => {
             mode: opponent,
             user_id: sessionStorage.getItem('user_id'),
             opponent_id: null,
-            timerDuration: time,
+            timerDuration: time
         };
 
         const dataPostmaking = {
@@ -107,12 +127,21 @@ const QuizStart = () => {
             }
     
             const result = await response.json();
-            
             result.gameId = gameId;
             result.userId = sessionStorage.getItem('user_id');
             
-            
             //console.log(result);
+            socket.emit("joinGame",{
+                username:sessionStorage.getItem('email'),
+                gameId: gameId,
+                mode: opponent
+            });
+
+            socket.emit("gameCreated",{
+                username: sessionStorage.getItem('email'),
+                gameId: gameId
+            });
+            //setResData(result);
             navigate("/quizpage", { state: result });
             //console.log(result);
         } catch (error) {
@@ -125,7 +154,7 @@ const QuizStart = () => {
             <Header />
             <main className="d-flex flex-column align-items-center flex-grow-1 mt-5">
                 <div className="d-flex justify-content-end w-50 mb-2">
-                    <span className="badge bg-info fs-5">Willkommen, bitte füllen Sie das Formular aus.</span>
+                    <span className="badge bg-info fs-5">{msg}</span>
                 </div>
 
                 <div className="card p-4 shadow-sm" style={{ width: "50%" }}>
@@ -160,7 +189,19 @@ const QuizStart = () => {
                         <p>Zeitdauer eingeben</p>
                         <form>
                             <div className="form-check">
-                                <input className="form-control" type="number" name="time" id="time" min={1} onChange={(e) => setTime(e.target.value)} />
+                                <input 
+                                    className="form-control" 
+                                    type="number" 
+                                    name="time" 
+                                    id="time" 
+                                    min={1} 
+                                    onChange={(e) => setTime(parseInt(e.target.value) || 0)} 
+                                    onKeyPress={(e) => {
+                                        if (!/[0-9]/.test(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
                             </div>
                         </form>
                         <br></br>

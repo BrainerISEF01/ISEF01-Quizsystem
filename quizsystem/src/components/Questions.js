@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "../components/Header"; 
+import Header from "./Header"; 
 import { Link,useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../fetchApi'; 
 
@@ -113,17 +113,22 @@ const Questions = () => {
 
             {/* Auswahl für die richtige Antwort */}
             <div className="mb-3">
-              <label htmlFor="richtige-antwort" className="form-label">Gib die richtige Antwort ein</label>
-              <input
-                type="text"
-                id="richtige-antwort"
-                className="form-control"
-                placeholder="Gib hier die richtige Antwort ein"
-                value={correctAnswer}
-                onChange={(e) => setCorrectAnswer(e.target.value)}
-                required
-              />
-            </div>
+            <label htmlFor="richtige-antwort" className="form-label">Korrekte Antwort</label>
+            <select
+             id="richtige-antwort"
+             className="form-select"
+             value={correctAnswer}
+             onChange={(e) => setCorrectAnswer(e.target.value)}
+             required
+          >
+             <option value="" disabled>Wähle eine Antwort</option>
+             {options.map((option, index) => (
+             <option key={index} value={option}>
+               Antwort {index + 1}
+             </option>
+          ))}
+             </select>
+          </div>
 
             {/* Speichern-Button */}
             <div className="text-center">

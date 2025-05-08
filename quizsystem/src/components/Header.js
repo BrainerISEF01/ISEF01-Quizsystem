@@ -53,7 +53,7 @@ const Header = () => {
         <h2 className="mb-0 fw-bold">Brainer Quiz Plattform</h2>
       </div>
       <div className="position-absolute bottom-0 end-0 pb-2 pe-4">
-        <Link to="/quizlobby" className="me-3">Quiz-Lobby</Link>
+        <Link to="/quizlobby" className="btn btn-link me-3">Quiz-Lobby</Link>
         <a href="#" onClick={handleLogout} className="btn btn-link me-3">Logout</a>
       </div>
     </header>

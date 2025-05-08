@@ -45,9 +45,9 @@ const Leaderboard = () => {
           <table className="w-full border-collapse mt-5 mx-auto" style={{ width: '800px' }}>
             <thead>
               <tr className="bg-gray-300">
-                <th className="border p-3">Mode</th>
-                <th className="border p-3">User</th>
-                <th className="border p-3">Score</th>
+                <th className="border p-3">Modus</th>
+                <th className="border p-3">Spieler</th>
+                <th className="border p-3">Punktzahl</th>
               </tr>
             </thead>
             <tbody>
@@ -61,7 +61,7 @@ const Leaderboard = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2" className="border p-3 text-center">
+                  <td colSpan="3" className="border p-3 text-center">
                     No data available
                   </td>
                 </tr>
